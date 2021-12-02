@@ -1,5 +1,4 @@
-mod year2021day1;
-mod year2021day2;
+mod y2021;
 
 use aoc_runner;
 #[macro_use]
