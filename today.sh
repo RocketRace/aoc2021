@@ -16,4 +16,5 @@ fn entry(input: &_) -> usize {
     echo $template > "./src/y$year/d$day.rs" &&
     echo "mod d$day;" >> "./src/y$year/mod.rs"  &&
     echo "Created template file"
+code -r "./src/y$year/d$day.rs"
 open "https://adventofcode.com/$year/day/$day"
