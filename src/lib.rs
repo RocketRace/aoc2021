@@ -1,3 +1,5 @@
+#![feature(bool_to_option)]
+#![feature(map_first_last)]
 mod y2021;
 
 use aoc_runner;

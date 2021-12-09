@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use itertools::Itertools;
 
 #[aoc_generator(day8, part1)]
@@ -101,3 +103,83 @@ fn bad_brute_force(input: &[Row]) -> usize {
         })
         .sum()
 }
+
+struct Row2 {
+    hints: [u8; 10],
+    finals: [u8; 4]
+}
+
+impl Row2 {
+    fn from_row(row: &Row) -> Self {
+        let mut hints = [0; 10];
+        for (i, hint) in row.hints.iter().enumerate() {
+            for (j, bit) in hint.iter().enumerate() {
+                if *bit {
+                    hints[i] |= 1 << j
+                }
+            }
+        }
+        let mut finals = [0; 4];
+        for (i, hint) in row.finals.iter().enumerate() {
+            for (j, bit) in hint.iter().enumerate() {
+                if *bit {
+                    finals[i] |= 1 << j
+                }
+            }
+        }
+        Row2 { hints, finals }
+    }
+}
+
+#[aoc(day8, part2, Good)]
+fn cool_boolean_statement(input: &[Row]) -> usize {
+    input
+        .into_iter()
+        .map(|row| Row2::from_row(row))
+        .map(|row| {
+            // One pass to find knowns-by-count
+            let mut permutation: HashMap<u8, u8> = HashMap::new();
+            let (mut one, mut four): (u8, u8) = (0, 0);
+            for &hint in &row.hints {
+                match hint.count_ones() {
+                    2 => {
+                        permutation.insert(hint, 1);
+                        one = hint;
+                    },
+                    3 => {permutation.insert(hint, 7);},
+                    4 => {
+                        permutation.insert(hint, 4);
+                        four = hint;
+                    },
+                    7 => {permutation.insert(hint, 8);},
+                    _ => ()
+                }
+            }
+            // One pass to find by overlap
+            for hint in row.hints {
+                match (
+                    hint.count_ones(), 
+                    (hint & one as u8).count_ones(), 
+                    (hint & four as u8).count_ones()
+                ) {
+                    (2, _, _) => (),
+                    (3, _, _) => (),
+                    (4, _, _) => (),
+                    (7, _, _) => (),
+                    (5, 2, _) => {permutation.insert(hint, 3);},
+                    (6, 1, _) => {permutation.insert(hint, 6);},
+                    (5, 1, 2) => {permutation.insert(hint, 2);},
+                    (5, 1, 3) => {permutation.insert(hint, 5);},
+                    (6, 2, 3) => {permutation.insert(hint, 0);},
+                    (6, 2, 4) => {permutation.insert(hint, 9);},
+                    x => println!("{:?}", x)
+                }
+            }
+            permutation[&row.finals[0]] as usize * 1000 +
+            permutation[&row.finals[1]] as usize * 100 +
+            permutation[&row.finals[2]] as usize * 10 +
+            permutation[&row.finals[3]] as usize
+        })
+        .sum() 
+}
+
