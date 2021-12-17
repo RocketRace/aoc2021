@@ -30,7 +30,7 @@ impl BBox {
 
     fn width(&self) -> isize {
         // `max()` required; zero-length ranges are represented with `end < start`
-        0.max(self.x.end() - self.x.start() + 1)
+        0.max(self.x.end() - self.x.start() + 1) // a range x..=x has a length of 1
     }
 
     fn height(&self) -> isize {
