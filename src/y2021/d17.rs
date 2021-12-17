@@ -19,6 +19,11 @@ fn maximize_height(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> is
     maximum_y_drop * (maximum_y_drop + 1) / 2
 }
 
+fn key(a: isize, b: isize, w: isize) -> usize {
+    // positive values only please
+    (a as usize) * (w as usize) + (b as usize)
+}
+
 #[aoc(day17, part2)]
 fn part_2(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> usize {
     // search x and y components individually for every possible "number of steps"
@@ -29,7 +34,7 @@ fn part_2(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> usize {
     let max_y = *input.1.end();
 
     let mut velocities = HashSet::new();
-    
+
     // compute upper bound of steps from maximum y drop
     // the largest step count gives the tallest arc
     for steps in 1..=(-min_y + 1) * 2 {
@@ -66,7 +71,7 @@ fn part_2(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> usize {
         // only unique velocities count
         for xv in x_range {
             for yv in yv_min..=yv_max {
-                velocities.insert((xv, yv));
+                velocities.insert(key(xv, yv - min_y, max_x));
             }
         }
     }
