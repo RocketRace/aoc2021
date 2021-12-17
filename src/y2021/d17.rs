@@ -1,4 +1,4 @@
-use std::{ops::RangeInclusive, collections::HashSet};
+use std::ops::RangeInclusive;
 
 #[aoc_generator(day17)]
 fn generator(input: &str) -> (RangeInclusive<isize>, RangeInclusive<isize>) {
@@ -19,13 +19,38 @@ fn maximize_height(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> is
     maximum_y_drop * (maximum_y_drop + 1) / 2
 }
 
-fn key(a: isize, b: isize, w: isize) -> usize {
-    // positive values only please
-    (a as usize) * (w as usize) + (b as usize)
+#[derive(Debug, Clone)]
+struct BBox {
+    x: RangeInclusive<isize>,
+    y: RangeInclusive<isize>
+}
+
+impl BBox {
+    fn new(x: RangeInclusive<isize>, y: RangeInclusive<isize>) -> Self { Self { x, y } }
+
+    fn width(&self) -> isize {
+        // `max()` required; zero-length ranges are represented with `end < start`
+        0.max(self.x.end() - self.x.start() + 1)
+    }
+
+    fn height(&self) -> isize {
+        0.max(self.y.end() - self.y.start() + 1)
+    }
+
+    fn area(&self) -> isize {
+        self.width() * self.height()
+    }
+    
+    fn intersection(&self, other: &BBox) -> BBox {
+        BBox::new(
+            *self.x.start().max(other.x.start())..=*self.x.end().min(other.x.end()),
+            *self.y.start().max(other.y.start())..=*self.y.end().min(other.y.end())
+        )
+    }
 }
 
 #[aoc(day17, part2)]
-fn part_2(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> usize {
+fn trajectory_count(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> isize {
     // search x and y components individually for every possible "number of steps"
 
     let min_x = *input.0.start(); 
@@ -33,11 +58,11 @@ fn part_2(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> usize {
     let min_y = *input.1.start(); 
     let max_y = *input.1.end();
 
-    let mut velocities = HashSet::new();
-
     // compute upper bound of steps from maximum y drop
     // the largest step count gives the tallest arc
-    for steps in 1..=(-min_y + 1) * 2 {
+    // 
+    // collect the intervals of "accuracy" for each step count
+    let intervals: Vec<_> = (1..=(-min_y + 1) * 2).map(|steps| {
         // solve bounds for yv
         // n / 2 * (yv - n + 1) is in (min_y, max_y)
         // (slightly easier since yv can be negative)
@@ -68,14 +93,21 @@ fn part_2(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> usize {
         else {
             special_xv_min..=special_xv_max
         };
-        // only unique velocities count
-        for xv in x_range {
-            for yv in yv_min..=yv_max {
-                velocities.insert(key(xv, yv - min_y, max_x));
-            }
-        }
-    }
-    
-    velocities.len()
+        let y_range = yv_min..=yv_max;
+        // The rectangular interval
+        BBox::new(x_range, y_range)
+    }).collect();
+
+    // compute the area of unique regions in the rectangles
+    // the data guarantees that every rectangle overlap is between consecutive elements
+    // (i.e. if you are in the target for N steps using a given velocity, it's always N consecutive steps)
+    // furthermore, if more than two rectangles {R1, R2, R3, ...} intersect, the intersection R1 & R2 
+    // is a superset of the intersection R1 & (R3 | R4 | ...)
+    // (this follows from the first guarantee)
+    intervals[0].area() + intervals
+        .windows(2)
+        .map(|window| window[1].area() - window[1].intersection(&window[0]).area())
+        .sum::<isize>()
 }
+
 
