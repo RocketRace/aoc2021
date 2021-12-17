@@ -1,19 +1,19 @@
 use std::ops::RangeInclusive;
 
 #[aoc_generator(day17)]
-fn generator(input: &str) -> (RangeInclusive<isize>, RangeInclusive<isize>) {
+fn generator(input: &str) -> BBox {
     let (x, y) = input[15..].split_once(", y=").unwrap();
     let (xa, xb) = x.split_once("..").unwrap();
     let (ya, yb) = y.split_once("..").unwrap();
-    (
+    BBox::new(
         xa.parse().unwrap()..=xb.parse().unwrap(), 
         ya.parse().unwrap()..=yb.parse().unwrap(), 
     )
 }
 
 #[aoc(day17, part1)]
-fn maximize_height(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> isize {
-    let maximum_y_drop = input.1.start();
+fn maximize_height(input: &BBox) -> isize {
+    let maximum_y_drop = *input.x.start();
 
     // maths
     maximum_y_drop * (maximum_y_drop + 1) / 2
@@ -50,13 +50,13 @@ impl BBox {
 }
 
 #[aoc(day17, part2)]
-fn trajectory_count(input: &(RangeInclusive<isize>, RangeInclusive<isize>)) -> isize {
+fn trajectory_count(input: &BBox) -> isize {
     // search x and y components individually for every possible "number of steps"
 
-    let min_x = *input.0.start(); 
-    let max_x = *input.0.end();
-    let min_y = *input.1.start(); 
-    let max_y = *input.1.end();
+    let min_x = *input.x.start(); 
+    let max_x = *input.x.end();
+    let min_y = *input.y.start(); 
+    let max_y = *input.y.end();
 
     // compute upper bound of steps from maximum y drop
     // the largest step count gives the tallest arc
