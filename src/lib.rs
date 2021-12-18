@@ -1,6 +1,8 @@
 #![feature(bool_to_option)]
 #![feature(map_first_last)]
 #![feature(option_result_contains)]
+#![feature(destructuring_assignment)]
+#![feature(box_patterns)]
 mod y2021;
 
 use aoc_runner;
