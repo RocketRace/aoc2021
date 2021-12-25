@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 // today I am busy so I
 // will not make a general solution.
 // GCC, Ghidra and Z3 are my friends.
